@@ -22,8 +22,7 @@ func main() {
 		}
 	}()
 
-	for {
-
+	for { // aplicando select para poupar tempo
 		select {
 		case messageChannelOne := <-channelOne:
 			fmt.Println(messageChannelOne)
