@@ -5,7 +5,7 @@ import (
 )
 
 func isValidTypeOfAddress(word string) bool {
-	validTypes := []string{"rua", "avenida", "estrada", "rodovida"}
+	validTypes := []string{"rua", "avenida", "estrada", "rodovia"}
 	isValid := false
 
 	for _, addressType := range validTypes {
