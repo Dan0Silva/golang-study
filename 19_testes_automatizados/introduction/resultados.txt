@@ -1,0 +1,9 @@
+mode: set
+automate_test/main.go:8.13,13.2 3 0
+automate_test/address/address.go:7.45,11.41 3 1
+automate_test/address/address.go:11.41,12.43 1 1
+automate_test/address/address.go:12.43,14.4 1 1
+automate_test/address/address.go:17.2,17.16 1 1
+automate_test/address/address.go:21.41,25.13 3 1
+automate_test/address/address.go:25.13,27.3 1 1
+automate_test/address/address.go:27.8,29.3 1 0

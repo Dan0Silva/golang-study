@@ -1,6 +1,7 @@
-package address
+package address_test
 
 import (
+	"automate_test/address"
 	"testing"
 )
 
@@ -17,10 +18,11 @@ func TestAddressType(t *testing.T) {
 		{"Estrada dos alarmados", "Estrada"},
 		{"Rodovia 180, kabreiro", "Rodovia"},
 		{"Banana", "Invalid Type"},
+		{"", "Invalid Type"},
 	}
 
 	for addressIndex, addressCase := range addressForTesting {
-		resultTypeRecived := AddressType(addressCase.address)
+		resultTypeRecived := address.AddressType(addressCase.address)
 
 		if resultTypeRecived != addressCase.expectResult {
 			t.Errorf("type error on %d case: \n\t\t[%s, %s]", addressIndex, resultTypeRecived, addressCase.expectResult)
