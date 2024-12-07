@@ -3,7 +3,6 @@ package controller
 import (
 	"crud/database"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 
@@ -27,6 +26,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	var user user
 	if err = json.Unmarshal(reqBody, &user); err != nil {
 		w.Write([]byte("Erro ao converter o usuário para struct."))
+		return
 	}
 
 	db, err := database.Connect()
@@ -44,21 +44,14 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 	defer statement.Close()
 
-	insertion, err := statement.Exec(user.Name, user.Email)
+	_, err = statement.Exec(user.Name, user.Email)
 	if err != nil {
 		w.Write([]byte("Erro ao criar o statement"))
 		return
 	}
 
-	_, err = insertion.LastInsertId()
-	if err != nil {
-		w.Write([]byte("Erro ao obter o id inserido"))
-		return
-	}
-
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte("Usuário cadastrado com sucesso"))
-
 }
 
 func GetUsers(w http.ResponseWriter, r *http.Request) {
@@ -100,6 +93,11 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	Id := params["id"]
 	var user user
 
+	if _, err := uuid.Parse(Id); err != nil {
+		w.Write([]byte("ID invalido"))
+		return
+	}
+
 	db, err := database.Connect()
 	if err != nil {
 		w.Write([]byte("Erro ao se conectar com o banco de dados."))
@@ -120,11 +118,74 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	fmt.Println("testing: ", Id)
-
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	if err = json.NewEncoder(w).Encode(user); err != nil {
 		w.Write([]byte("Erro ao converter usuários para formato json."))
 	}
+}
+
+func UpdateUser(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	var user user
+
+	Id := params["id"]
+
+	reqBody, err := io.ReadAll(r.Body)
+	if err != nil {
+		w.Write([]byte("Erro ao ler corpo da requisição."))
+		return
+	}
+
+	if err = json.Unmarshal(reqBody, &user); err != nil {
+		w.Write([]byte("Erro ao converter requisição para json."))
+		return
+	}
+
+	db, err := database.Connect()
+	if err != nil {
+		w.Write([]byte("Erro ao tentar conexão com banco"))
+		return
+	}
+	defer db.Close()
+
+	statement, err := db.Prepare("update USERS set NAME = ?, EMAIL = ? where ID = ?")
+	if err != nil {
+		w.Write([]byte("Erro ao criar o statement"))
+		return
+	}
+	defer statement.Close()
+
+	if _, err = statement.Exec(user.Name, user.Email, Id); err != nil {
+		w.Write([]byte("Erro ao criar o statement"))
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func DeleteUser(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+
+	Id := params["id"]
+
+	db, err := database.Connect()
+	if err != nil {
+		w.Write([]byte("Erro ao conectar com o banco de dados."))
+		return
+	}
+	defer db.Close()
+
+	statement, err := db.Prepare("delete from USERS where ID = ?")
+	if err != nil {
+		w.Write([]byte("Erro ao criar statement."))
+		return
+	}
+
+	if _, err = statement.Exec(Id); err != nil {
+		w.Write([]byte("Erro ao deletar usuário."))
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
