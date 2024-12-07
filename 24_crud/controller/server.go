@@ -181,6 +181,7 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Erro ao criar statement."))
 		return
 	}
+	defer statement.Close()
 
 	if _, err = statement.Exec(Id); err != nil {
 		w.Write([]byte("Erro ao deletar usuário."))
